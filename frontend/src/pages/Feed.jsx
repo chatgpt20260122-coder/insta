@@ -324,9 +324,68 @@ const Feed = () => {
       <div className="lg:ml-64 pt-16 lg:pt-0">
         <div className="max-w-2xl mx-auto py-6 px-4">
           {/* Stories */}
-          {stories.length > 0 && (
+          {(stories.length > 0 || true) && (
             <div className="mb-6 bg-white border rounded-lg p-4">
               <div className="flex gap-4 overflow-x-auto pb-2">
+                {/* Add Story Button */}
+                <Dialog open={createStoryOpen} onOpenChange={setCreateStoryOpen}>
+                  <DialogTrigger asChild>
+                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-600 p-0.5 flex items-center justify-center">
+                        <div className="bg-white rounded-full w-full h-full flex items-center justify-center">
+                          <PlusSquare className="w-6 h-6 text-purple-600" />
+                        </div>
+                      </div>
+                      <span className="text-xs">Criar story</span>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Criar story</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateStory} className="space-y-4 py-4">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                        {storyImage ? (
+                          <div className="relative">
+                            <img 
+                              src={URL.createObjectURL(storyImage)} 
+                              alt="Preview" 
+                              className="max-h-64 mx-auto rounded"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute top-2 right-2"
+                              onClick={() => setStoryImage(null)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <label className="cursor-pointer block">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => setStoryImage(e.target.files[0])}
+                            />
+                            <PlusSquare className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                            <p className="text-sm text-gray-600">Clique para selecionar foto</p>
+                          </label>
+                        )}
+                      </div>
+                      <Button 
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        disabled={!storyImage || uploadingStory}
+                      >
+                        {uploadingStory ? 'Enviando...' : 'Publicar story'}
+                      </Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+
                 {stories.map((storyGroup) => (
                   <div key={storyGroup.userId} className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-600 p-0.5">
