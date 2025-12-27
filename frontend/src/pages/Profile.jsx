@@ -109,7 +109,7 @@ const Profile = () => {
         <div className="flex items-center justify-between">
           <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={() => navigate('/')} />
           <span className="font-semibold text-lg">{user.username}</span>
-          <Settings className="w-6 h-6 cursor-pointer" onClick={handleLogout} />
+          <Settings className="w-6 h-6 cursor-pointer" onClick={() => navigate('/settings')} />
         </div>
       </div>
 
