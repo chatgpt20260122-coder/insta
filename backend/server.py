@@ -10,6 +10,10 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from bson import ObjectId
 
+# IMPORTANT: Load environment variables FIRST before importing other modules
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
 from models import (
     UserRegister, UserLogin, UserResponse, UserUpdate,
     PostResponse, PostCreate, CommentCreate, CommentResponse,
@@ -20,9 +24,6 @@ from auth import (
     get_current_user_id, security
 )
 from cloudinary_config import upload_image_to_cloudinary, delete_image_from_cloudinary
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
