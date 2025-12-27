@@ -428,9 +428,28 @@ const Feed = () => {
                       </Avatar>
                       <p className="font-semibold text-sm">{post.username}</p>
                     </div>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </Button>
+                    {post.userId === currentUser.id ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-5 h-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="text-red-600 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir post
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-5 h-5" />
+                      </Button>
+                    )}
                   </div>
 
                   <div className="relative aspect-square bg-gray-100">
