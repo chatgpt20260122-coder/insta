@@ -236,6 +236,14 @@ async def follow_user(user_id: str, current_user_id: str = Depends(get_current_u
         {"$addToSet": {"followers": current_user_id}}
     )
     
+    # Create notification
+    await create_notification(
+        user_id=user_id,
+        actor_id=current_user_id,
+        notif_type="follow",
+        message="começou a seguir você"
+    )
+    
     return {"message": "Following user", "isFollowing": True}
 
 @api_router.delete("/users/{user_id}/follow")
