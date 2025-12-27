@@ -22,6 +22,8 @@ const Feed = () => {
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
   const [storyImage, setStoryImage] = useState(null);
   const [uploadingStory, setUploadingStory] = useState(false);
+  const [viewingStory, setViewingStory] = useState(null);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const navigate = useNavigate();
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
