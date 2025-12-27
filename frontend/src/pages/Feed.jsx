@@ -536,9 +536,22 @@ const Feed = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     ) : (
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="w-5 h-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => handleSharePost(post.id)}
+                            className="cursor-pointer"
+                          >
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Compartilhar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
 
