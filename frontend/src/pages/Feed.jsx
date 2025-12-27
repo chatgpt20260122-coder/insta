@@ -758,6 +758,68 @@ const Feed = () => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Story Views Modal */}
+      <Dialog open={showStoryViews} onOpenChange={setShowStoryViews}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Visualizações</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {storyViews.length > 0 ? (
+              <div className="space-y-3">
+                {storyViews.map((view) => (
+                  <div key={view.userId} className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={view.profilePicture} />
+                      <AvatarFallback>{view.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{view.username}</p>
+                      <p className="text-xs text-gray-500">{formatTimestamp(view.timestamp)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Nenhuma visualização ainda</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Post Modal */}
+      <Dialog open={sharePostOpen} onOpenChange={setSharePostOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Compartilhar post</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto">
+            {shareUsers.length > 0 ? (
+              <div className="space-y-2">
+                {shareUsers.map((user) => (
+                  <div 
+                    key={user.id} 
+                    className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    onClick={() => handleSendShare([user.id])}
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={user.profilePicture} />
+                      <AvatarFallback>{user.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{user.username}</p>
+                      <p className="text-xs text-gray-500">{user.fullName}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center py-8 text-gray-500">Nenhum usuário encontrado</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
