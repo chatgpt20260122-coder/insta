@@ -211,6 +211,68 @@ const Feed = () => {
     }
   };
 
+  const handleViewStory = async (storyGroup) => {
+    setViewingStory(storyGroup);
+    setCurrentStoryIndex(0);
+    
+    // Record view
+    if (storyGroup.stories[0]) {
+      try {
+        await storyAPI.view(storyGroup.stories[0].id);
+      } catch (error) {
+        console.error('Error recording view:', error);
+      }
+    }
+  };
+
+  const loadStoryViews = async (storyId) => {
+    try {
+      const response = await storyAPI.getViews(storyId);
+      setStoryViews(response.data.views);
+      setShowStoryViews(true);
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar visualizações',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleSharePost = async (postId) => {
+    setSharePostId(postId);
+    
+    // Load users to share with
+    try {
+      const response = await userAPI.search('');
+      setShareUsers(response.data.users);
+      setSharePostOpen(true);
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar usuários',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleSendShare = async (userIds) => {
+    try {
+      await shareAPI.sharePost(sharePostId, userIds);
+      setSharePostOpen(false);
+      toast({
+        title: 'Compartilhado!',
+        description: `Post compartilhado com ${userIds.length} pessoas`
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao compartilhar',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const formatTimestamp = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
