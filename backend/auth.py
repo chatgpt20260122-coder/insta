@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -41,7 +41,7 @@ def decode_access_token(token: str) -> Optional[str]:
         return user_id
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
+    except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 def get_current_user_id(credentials: HTTPAuthorizationCredentials = Security(security)) -> str:
