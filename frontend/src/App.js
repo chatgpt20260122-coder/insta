@@ -7,6 +7,8 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import UserProfile from "./pages/UserProfile";
 import Settings from "./pages/Settings";
+import Followers from "./pages/Followers";
+import Notifications from "./pages/Notifications";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
