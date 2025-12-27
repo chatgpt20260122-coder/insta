@@ -1,21 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentUser, mockPosts } from '../mockData';
-import { Grid, Heart, MessageCircle, Settings, ArrowLeft } from 'lucide-react';
+import { Grid, Heart, Settings, ArrowLeft, Camera } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Card } from '../components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
+import { toast } from '../hooks/use-toast';
+import { authAPI, userAPI, postAPI } from '../api';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const userPosts = mockPosts.filter(post => post.username === currentUser.username);
-  const [following, setFollowing] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userPosts, setUserPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    fullName: '',
+    bio: '',
+    profilePicture: null
+  });
+  const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const response = await authAPI.getMe();
+      setUser(response.data.user);
+      setEditData({
+        fullName: response.data.user.fullName,
+        bio: response.data.user.bio,
+        profilePicture: null
+      });
+      
+      // Load user posts
+      const feedResponse = await postAPI.getFeed();
+      const myPosts = feedResponse.data.posts.filter(p => p.userId === response.data.user.id);
+      setUserPosts(myPosts);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao carregar perfil',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
+    localStorage.clear();
     navigate('/login');
   };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setUpdating(true);
+
+    try {
+      const formData = new FormData();
+      if (editData.fullName) formData.append('fullName', editData.fullName);
+      if (editData.bio) formData.append('bio', editData.bio);
+      if (editData.profilePicture) formData.append('profilePicture', editData.profilePicture);
+
+      const response = await userAPI.updateProfile(formData);
+      setUser(response.data.user);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      setEditOpen(false);
+      toast({
+        title: 'Perfil atualizado!',
+        description: 'Suas alterações foram salvas.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao atualizar perfil',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,7 +108,7 @@ const Profile = () => {
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b z-50 px-4 py-3">
         <div className="flex items-center justify-between">
           <ArrowLeft className="w-6 h-6 cursor-pointer" onClick={() => navigate('/')} />
-          <span className="font-semibold text-lg">{currentUser.username}</span>
+          <span className="font-semibold text-lg">{user.username}</span>
           <Settings className="w-6 h-6 cursor-pointer" onClick={handleLogout} />
         </div>
       </div>
@@ -50,18 +135,77 @@ const Profile = () => {
           {/* Profile Header */}
           <div className="bg-white rounded-lg p-8 mb-6 shadow-sm">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-              <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
-                <AvatarImage src={currentUser.profilePicture} />
-                <AvatarFallback className="text-3xl">{currentUser.username[0]}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
+                  <AvatarImage src={user.profilePicture} />
+                  <AvatarFallback className="text-3xl">{user.username[0]}</AvatarFallback>
+                </Avatar>
+              </div>
 
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-                  <h2 className="text-2xl font-semibold">{currentUser.username}</h2>
+                  <h2 className="text-2xl font-semibold">{user.username}</h2>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="hover:bg-gray-100">
-                      Editar perfil
-                    </Button>
+                    <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          Editar perfil
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Editar perfil</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={handleUpdateProfile} className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label>Foto de perfil</Label>
+                            <div className="flex items-center gap-4">
+                              <Avatar className="w-20 h-20">
+                                <AvatarImage src={editData.profilePicture ? URL.createObjectURL(editData.profilePicture) : user.profilePicture} />
+                                <AvatarFallback>{user.username[0]}</AvatarFallback>
+                              </Avatar>
+                              <label className="cursor-pointer">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => setEditData({ ...editData, profilePicture: e.target.files[0] })}
+                                />
+                                <Button type="button" variant="outline" size="sm" as="span">
+                                  <Camera className="w-4 h-4 mr-2" />
+                                  Alterar foto
+                                </Button>
+                              </label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="fullName">Nome completo</Label>
+                            <Input
+                              id="fullName"
+                              value={editData.fullName}
+                              onChange={(e) => setEditData({ ...editData, fullName: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="bio">Bio</Label>
+                            <Textarea
+                              id="bio"
+                              value={editData.bio}
+                              onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                              placeholder="Conte um pouco sobre você..."
+                              rows={3}
+                            />
+                          </div>
+                          <Button 
+                            type="submit" 
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
+                            disabled={updating}
+                          >
+                            {updating ? 'Salvando...' : 'Salvar alterações'}
+                          </Button>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                     <Button variant="outline" size="sm" className="lg:hidden" onClick={handleLogout}>
                       <Settings className="w-4 h-4" />
                     </Button>
@@ -70,22 +214,22 @@ const Profile = () => {
 
                 <div className="flex justify-center md:justify-start gap-8 mb-6">
                   <div className="text-center">
-                    <div className="font-semibold text-lg">{currentUser.posts}</div>
+                    <div className="font-semibold text-lg">{user.posts}</div>
                     <div className="text-gray-600 text-sm">publicações</div>
                   </div>
-                  <div className="text-center cursor-pointer hover:text-gray-700">
-                    <div className="font-semibold text-lg">{currentUser.followers}</div>
+                  <div className="text-center">
+                    <div className="font-semibold text-lg">{user.followers}</div>
                     <div className="text-gray-600 text-sm">seguidores</div>
                   </div>
-                  <div className="text-center cursor-pointer hover:text-gray-700">
-                    <div className="font-semibold text-lg">{currentUser.following}</div>
+                  <div className="text-center">
+                    <div className="font-semibold text-lg">{user.following}</div>
                     <div className="text-gray-600 text-sm">seguindo</div>
                   </div>
                 </div>
 
                 <div>
-                  <p className="font-semibold mb-1">{currentUser.fullName}</p>
-                  <p className="text-gray-700">{currentUser.bio}</p>
+                  <p className="font-semibold mb-1">{user.fullName}</p>
+                  <p className="text-gray-700">{user.bio || 'Sem bio'}</p>
                 </div>
               </div>
             </div>
@@ -97,10 +241,6 @@ const Profile = () => {
               <TabsTrigger value="posts" className="flex-1 gap-2">
                 <Grid className="w-4 h-4" />
                 <span className="hidden sm:inline">Publicações</span>
-              </TabsTrigger>
-              <TabsTrigger value="saved" className="flex-1 gap-2">
-                <Heart className="w-4 h-4" />
-                <span className="hidden sm:inline">Salvos</span>
               </TabsTrigger>
             </TabsList>
 
@@ -123,10 +263,6 @@ const Profile = () => {
                             <Heart className="w-6 h-6 fill-white" />
                             <span className="font-semibold">{post.likes}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <MessageCircle className="w-6 h-6 fill-white" />
-                            <span className="font-semibold">{post.comments.length}</span>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -135,16 +271,12 @@ const Profile = () => {
               ) : (
                 <div className="text-center py-16">
                   <Grid className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-gray-600 text-lg">Nenhuma publicação ainda</p>
+                  <p className="text-gray-600 text-lg mb-2">Nenhuma publicação ainda</p>
+                  <Button onClick={() => navigate('/')} className="bg-gradient-to-r from-purple-600 to-pink-600">
+                    Criar primeiro post
+                  </Button>
                 </div>
               )}
-            </TabsContent>
-
-            <TabsContent value="saved" className="mt-6">
-              <div className="text-center py-16">
-                <Heart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-gray-600 text-lg">Nenhum post salvo</p>
-              </div>
             </TabsContent>
           </Tabs>
         </div>
