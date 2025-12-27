@@ -164,17 +164,18 @@ const Profile = () => {
                                 <AvatarImage src={editData.profilePicture ? URL.createObjectURL(editData.profilePicture) : user.profilePicture} />
                                 <AvatarFallback>{user.username[0]}</AvatarFallback>
                               </Avatar>
-                              <label className="cursor-pointer">
+                              <label htmlFor="profilePicFile" className="cursor-pointer">
                                 <input
+                                  id="profilePicFile"
                                   type="file"
                                   accept="image/*"
                                   className="hidden"
                                   onChange={(e) => setEditData({ ...editData, profilePicture: e.target.files[0] })}
                                 />
-                                <Button type="button" variant="outline" size="sm" as="span">
+                                <span className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
                                   <Camera className="w-4 h-4 mr-2" />
                                   Alterar foto
-                                </Button>
+                                </span>
                               </label>
                             </div>
                           </div>
