@@ -146,6 +146,63 @@ const Feed = () => {
     }
   };
 
+  const handleCreateStory = async (e) => {
+    e.preventDefault();
+    if (!storyImage) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione uma imagem',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setUploadingStory(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', storyImage);
+
+      await storyAPI.create(formData);
+      
+      setCreateStoryOpen(false);
+      setStoryImage(null);
+      loadStories(); // Reload stories
+      
+      toast({
+        title: 'Story criado!',
+        description: 'Seu story foi publicado com sucesso.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao criar story',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadingStory(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Deseja realmente excluir este post?')) return;
+    
+    try {
+      await postAPI.delete(postId);
+      setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+      
+      toast({
+        title: 'Post excluído!',
+        description: 'Seu post foi removido com sucesso.'
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao excluir post',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const formatTimestamp = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
