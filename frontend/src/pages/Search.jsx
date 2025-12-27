@@ -123,13 +123,16 @@ const Search = () => {
                 users.map((user) => (
                   <div key={user.id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div 
+                        className="flex items-center gap-3 cursor-pointer flex-1"
+                        onClick={() => navigate(`/user/${user.id}`)}
+                      >
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={user.profilePicture} />
                           <AvatarFallback>{user.username[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-sm">{user.username}</p>
+                          <p className="font-semibold text-sm hover:text-gray-600">{user.username}</p>
                           <p className="text-gray-600 text-sm">{user.fullName}</p>
                           <p className="text-gray-500 text-xs">{user.followers} seguidores</p>
                         </div>
