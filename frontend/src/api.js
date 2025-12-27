@@ -52,6 +52,26 @@ export const storyAPI = {
   create: (formData) => api.post('/stories', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  view: (storyId) => api.post(`/stories/${storyId}/view`),
+  getViews: (storyId) => api.get(`/stories/${storyId}/views`),
+};
+
+// Messages API
+export const messageAPI = {
+  getConversations: () => api.get('/messages/conversations'),
+  getMessages: (userId) => api.get(`/messages/${userId}`),
+  sendMessage: (userId, text) => api.post(`/messages/${userId}`, { text }),
+};
+
+// Notifications API
+export const notificationAPI = {
+  getAll: () => api.get('/notifications'),
+  markAsRead: (notificationId) => api.post(`/notifications/${notificationId}/read`),
+};
+
+// Share API
+export const shareAPI = {
+  sharePost: (postId, userIds) => api.post(`/posts/${postId}/share`, { userIds }),
 };
 
 export default api;
