@@ -380,6 +380,7 @@ async def add_comment(
 ):
     # Get user info
     user = await users_collection.find_one({"_id": ObjectId(current_user_id)})
+    post = await posts_collection.find_one({"_id": ObjectId(post_id)})
     
     comment = {
         "id": str(ObjectId()),
@@ -393,6 +394,17 @@ async def add_comment(
         {"_id": ObjectId(post_id)},
         {"$push": {"comments": comment}}
     )
+    
+    # Create notification
+    if post:
+        await create_notification(
+            user_id=post["userId"],
+            actor_id=current_user_id,
+            notif_type="comment",
+            message=f'comentou: "{comment_data.text[:30]}"',
+            post_id=post_id,
+            post_image=post["imageUrl"]
+        )
     
     return comment
 
