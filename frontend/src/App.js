@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
+import UserProfile from "./pages/UserProfile";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
