@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
 import { toast } from '../hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { postAPI, storyAPI } from '../api';
+import { postAPI, storyAPI, userAPI, shareAPI } from '../api';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
