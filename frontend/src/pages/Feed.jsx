@@ -237,7 +237,10 @@ const Feed = () => {
             InstaClone
           </h1>
           <div className="flex gap-4">
-            <Heart className="w-6 h-6 cursor-pointer hover:text-pink-600 transition-colors" />
+            <Heart 
+              className="w-6 h-6 cursor-pointer hover:text-pink-600 transition-colors" 
+              onClick={() => navigate('/notifications')}
+            />
             <Send className="w-6 h-6 cursor-pointer hover:text-blue-600 transition-colors" />
           </div>
         </div>
