@@ -698,12 +698,22 @@ const Feed = () => {
                       {formatTimestamp(viewingStory.stories[currentStoryIndex]?.timestamp)}
                     </span>
                   </div>
-                  <button
-                    onClick={() => setViewingStory(null)}
-                    className="text-white hover:text-gray-300"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {viewingStory.userId === currentUser.id && (
+                      <button
+                        onClick={() => loadStoryViews(viewingStory.stories[currentStoryIndex]?.id)}
+                        className="text-white hover:text-gray-300 flex items-center gap-1"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setViewingStory(null)}
+                      className="text-white hover:text-gray-300"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
                 </div>
                 
                 {/* Progress bars */}
