@@ -9,6 +9,7 @@ import UserProfile from "./pages/UserProfile";
 import Settings from "./pages/Settings";
 import Followers from "./pages/Followers";
 import Notifications from "./pages/Notifications";
+import Messages from "./pages/Messages";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
