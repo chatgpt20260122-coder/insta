@@ -55,7 +55,7 @@ const Feed = () => {
         await postAPI.like(postId);
       }
       
-      setPosts(posts.map(post => {
+      setPosts(prevPosts => prevPosts.map(post => {
         if (post.id === postId) {
           return {
             ...post,
@@ -80,7 +80,7 @@ const Feed = () => {
     try {
       const response = await postAPI.addComment(postId, commentText[postId]);
       
-      setPosts(posts.map(post => {
+      setPosts(prevPosts => prevPosts.map(post => {
         if (post.id === postId) {
           return {
             ...post,
@@ -90,7 +90,7 @@ const Feed = () => {
         return post;
       }));
 
-      setCommentText({ ...commentText, [postId]: '' });
+      setCommentText(prev => ({ ...prev, [postId]: '' }));
       toast({
         title: 'Comentário adicionado!',
         description: 'Seu comentário foi publicado com sucesso.'
