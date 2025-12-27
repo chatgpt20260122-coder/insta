@@ -1,36 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockUsers } from '../mockData';
 import { Search as SearchIcon, ArrowLeft, UserPlus, UserCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { toast } from '../hooks/use-toast';
+import { userAPI } from '../api';
 
 const Search = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [followingUsers, setFollowingUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const filteredUsers = mockUsers.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleFollow = (userId) => {
-    if (followingUsers.includes(userId)) {
-      setFollowingUsers(followingUsers.filter((id) => id !== userId));
-      toast({
-        title: 'Deixou de seguir',
-        description: 'Você não segue mais este usuário.'
-      });
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      searchUsers();
     } else {
-      setFollowingUsers([...followingUsers, userId]);
+      setUsers([]);
+    }
+  }, [searchQuery]);
+
+  const searchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await userAPI.search(searchQuery);
+      setUsers(response.data.users);
+    } catch (error) {
+      console.error('Error searching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFollow = async (userId, isFollowing) => {
+    try {
+      if (isFollowing) {
+        await userAPI.unfollow(userId);
+        toast({
+          title: 'Deixou de seguir',
+          description: 'Você não segue mais este usuário.'
+        });
+      } else {
+        await userAPI.follow(userId);
+        toast({
+          title: 'Seguindo!',
+          description: 'Você começou a seguir este usuário.'
+        });
+      }
+      
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, isFollowing: !isFollowing } : user
+      ));
+    } catch (error) {
       toast({
-        title: 'Seguindo!',
-        description: 'Você começou a seguir este usuário.'
+        title: 'Erro',
+        description: 'Erro ao seguir/deixar de seguir',
+        variant: 'destructive'
       });
     }
   };
@@ -85,11 +113,15 @@ const Search = () => {
           {/* Search Results */}
           {searchQuery ? (
             <Card className="bg-white divide-y">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              {loading ? (
+                <div className="p-8 text-center">
+                  <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : users.length > 0 ? (
+                users.map((user) => (
                   <div key={user.id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/profile')}>
+                      <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12">
                           <AvatarImage src={user.profilePicture} />
                           <AvatarFallback>{user.username[0]}</AvatarFallback>
@@ -101,12 +133,12 @@ const Search = () => {
                         </div>
                       </div>
                       <Button
-                        onClick={() => handleFollow(user.id)}
+                        onClick={() => handleFollow(user.id, user.isFollowing)}
                         size="sm"
-                        variant={followingUsers.includes(user.id) ? 'outline' : 'default'}
-                        className={followingUsers.includes(user.id) ? '' : 'bg-blue-500 hover:bg-blue-600'}
+                        variant={user.isFollowing ? 'outline' : 'default'}
+                        className={user.isFollowing ? '' : 'bg-blue-500 hover:bg-blue-600'}
                       >
-                        {followingUsers.includes(user.id) ? (
+                        {user.isFollowing ? (
                           <>
                             <UserCheck className="w-4 h-4 mr-1" />
                             Seguindo
@@ -129,47 +161,10 @@ const Search = () => {
               )}
             </Card>
           ) : (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold mb-4">Sugestões para você</h2>
-                <Card className="bg-white divide-y">
-                  {mockUsers.slice(1).map((user) => (
-                    <div key={user.id} className="p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/profile')}>
-                          <Avatar className="w-12 h-12">
-                            <AvatarImage src={user.profilePicture} />
-                            <AvatarFallback>{user.username[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-semibold text-sm">{user.username}</p>
-                            <p className="text-gray-600 text-sm">{user.fullName}</p>
-                            <p className="text-gray-500 text-xs">{user.followers} seguidores</p>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handleFollow(user.id)}
-                          size="sm"
-                          variant={followingUsers.includes(user.id) ? 'outline' : 'default'}
-                          className={followingUsers.includes(user.id) ? '' : 'bg-blue-500 hover:bg-blue-600'}
-                        >
-                          {followingUsers.includes(user.id) ? (
-                            <>
-                              <UserCheck className="w-4 h-4 mr-1" />
-                              Seguindo
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="w-4 h-4 mr-1" />
-                              Seguir
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </Card>
-              </div>
+            <div className="text-center py-16">
+              <SearchIcon className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+              <p className="text-gray-600 text-lg">Busque por usuários</p>
+              <p className="text-gray-500 text-sm">Digite um nome ou nome de usuário</p>
             </div>
           )}
         </div>
