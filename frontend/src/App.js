@@ -37,6 +37,10 @@ function App() {
             element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} 
           />
           <Route 
+            path="/user/:userId" 
+            element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />} 
+          />
+          <Route 
             path="/search" 
             element={isAuthenticated ? <Search /> : <Navigate to="/login" />} 
           />
