@@ -221,11 +221,17 @@ const Profile = () => {
                     <div className="font-semibold text-lg">{user.posts}</div>
                     <div className="text-gray-600 text-sm">publicações</div>
                   </div>
-                  <div className="text-center">
+                  <div 
+                    className="text-center cursor-pointer hover:text-gray-700 transition-colors"
+                    onClick={() => navigate('/followers')}
+                  >
                     <div className="font-semibold text-lg">{user.followers}</div>
                     <div className="text-gray-600 text-sm">seguidores</div>
                   </div>
-                  <div className="text-center">
+                  <div 
+                    className="text-center cursor-pointer hover:text-gray-700 transition-colors"
+                    onClick={() => navigate('/followers')}
+                  >
                     <div className="font-semibold text-lg">{user.following}</div>
                     <div className="text-gray-600 text-sm">seguindo</div>
                   </div>
