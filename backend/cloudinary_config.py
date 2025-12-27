@@ -13,22 +13,36 @@ cloudinary.config(
 
 async def upload_image_to_cloudinary(file: UploadFile, folder: str = "instaclone") -> str:
     """
-    Upload an image to Cloudinary and return the URL
+    Upload an image or video to Cloudinary and return the URL
     """
     try:
         # Read file content
         contents = await file.read()
         
+        # Detect if it's a video
+        resource_type = "video" if file.content_type and file.content_type.startswith("video/") else "image"
+        
         # Upload to Cloudinary
-        result = cloudinary.uploader.upload(
-            contents,
-            folder=folder,
-            resource_type="image",
-            transformation=[
-                {'width': 1080, 'height': 1080, 'crop': 'limit'},
-                {'quality': 'auto'}
-            ]
-        )
+        if resource_type == "video":
+            result = cloudinary.uploader.upload(
+                contents,
+                folder=folder,
+                resource_type="video",
+                transformation=[
+                    {'width': 1080, 'height': 1920, 'crop': 'limit'},
+                    {'quality': 'auto'}
+                ]
+            )
+        else:
+            result = cloudinary.uploader.upload(
+                contents,
+                folder=folder,
+                resource_type="image",
+                transformation=[
+                    {'width': 1080, 'height': 1080, 'crop': 'limit'},
+                    {'quality': 'auto'}
+                ]
+            )
         
         return result['secure_url']
     except Exception as e:
