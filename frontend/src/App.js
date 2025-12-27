@@ -60,6 +60,14 @@ function App() {
             path="/notifications" 
             element={isAuthenticated ? <Notifications /> : <Navigate to="/login" />} 
           />
+          <Route 
+            path="/messages" 
+            element={isAuthenticated ? <Messages /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/messages/:userId" 
+            element={isAuthenticated ? <Messages /> : <Navigate to="/login" />} 
+          />
         </Routes>
       </BrowserRouter>
       <Toaster />
