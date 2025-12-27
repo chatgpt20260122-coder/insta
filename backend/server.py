@@ -267,11 +267,15 @@ async def get_feed(
     following_list = current_user.get("following", [])
     following_list.append(current_user_id)  # Include own posts
     
-    # Get posts from following users
+    # If not following anyone, show all posts (discovery mode)
     skip = (page - 1) * limit
-    posts = await posts_collection.find(
-        {"userId": {"$in": following_list}}
-    ).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    if len(following_list) <= 1:  # Only has self
+        posts = await posts_collection.find().sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    else:
+        # Get posts from following users
+        posts = await posts_collection.find(
+            {"userId": {"$in": following_list}}
+        ).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
     for post in posts:
