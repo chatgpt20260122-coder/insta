@@ -583,11 +583,24 @@ const Feed = () => {
         <Dialog open={!!viewingStory} onOpenChange={() => setViewingStory(null)}>
           <DialogContent className="max-w-md p-0 bg-black border-0">
             <div className="relative aspect-[9/16] bg-black">
-              <img
-                src={viewingStory.stories[currentStoryIndex]?.imageUrl}
-                alt="Story"
-                className="w-full h-full object-contain"
-              />
+              {viewingStory.stories[currentStoryIndex]?.imageUrl.includes('.mp4') || 
+               viewingStory.stories[currentStoryIndex]?.imageUrl.includes('.mov') ||
+               viewingStory.stories[currentStoryIndex]?.imageUrl.includes('video') ? (
+                <video
+                  src={viewingStory.stories[currentStoryIndex]?.imageUrl}
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  playsInline
+                  controls
+                />
+              ) : (
+                <img
+                  src={viewingStory.stories[currentStoryIndex]?.imageUrl}
+                  alt="Story"
+                  className="w-full h-full object-contain"
+                />
+              )}
               
               {/* Story Header */}
               <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
