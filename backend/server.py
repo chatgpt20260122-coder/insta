@@ -415,9 +415,17 @@ async def get_stories(current_user_id: str = Depends(get_current_user_id)):
     
     # Get stories from last 24 hours
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    stories = await stories_collection.find({
-        "userId": {"$in": following_list},
-        "timestamp": {"$gte": twenty_four_hours_ago}
+    
+    # If not following anyone, show all stories
+    if len(following_list) <= 1:  # Only has self
+        stories = await stories_collection.find({
+            "timestamp": {"$gte": twenty_four_hours_ago}
+        }).sort("timestamp", -1).to_list(100)
+    else:
+        stories = await stories_collection.find({
+            "userId": {"$in": following_list},
+            "timestamp": {"$gte": twenty_four_hours_ago}
+        }).sort("timestamp", -1).to_list(100)
     }).sort("timestamp", -1).to_list(100)
     
     # Group stories by user
