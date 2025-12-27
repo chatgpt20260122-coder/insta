@@ -347,10 +347,21 @@ async def create_post(
 
 @api_router.post("/posts/{post_id}/like")
 async def like_post(post_id: str, current_user_id: str = Depends(get_current_user_id)):
-    await posts_collection.update_one(
-        {"_id": ObjectId(post_id)},
-        {"$addToSet": {"likes": current_user_id}}
-    )
+    post = await posts_collection.find_one({"_id": ObjectId(post_id)})
+    if post:
+        await posts_collection.update_one(
+            {"_id": ObjectId(post_id)},
+            {"$addToSet": {"likes": current_user_id}}
+        )
+        # Create notification
+        await create_notification(
+            user_id=post["userId"],
+            actor_id=current_user_id,
+            notif_type="like",
+            message="curtiu sua foto",
+            post_id=post_id,
+            post_image=post["imageUrl"]
+        )
     return {"message": "Post liked"}
 
 @api_router.delete("/posts/{post_id}/like")
