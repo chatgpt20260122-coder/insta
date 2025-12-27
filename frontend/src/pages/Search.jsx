@@ -50,10 +50,12 @@ const Search = () => {
         });
       }
       
-      // Update local state
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, isFollowing: !isFollowing } : user
-      ));
+      // Update local state using functional update to avoid stale closure
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, isFollowing: !isFollowing } : user
+        )
+      );
     } catch (error) {
       toast({
         title: 'Erro',
