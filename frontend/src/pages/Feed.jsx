@@ -558,6 +558,81 @@ const Feed = () => {
           </Button>
         </div>
       </div>
+
+      {/* Story Viewer Modal */}
+      {viewingStory && (
+        <Dialog open={!!viewingStory} onOpenChange={() => setViewingStory(null)}>
+          <DialogContent className="max-w-md p-0 bg-black border-0">
+            <div className="relative aspect-[9/16] bg-black">
+              <img
+                src={viewingStory.stories[currentStoryIndex]?.imageUrl}
+                alt="Story"
+                className="w-full h-full object-contain"
+              />
+              
+              {/* Story Header */}
+              <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8 border-2 border-white">
+                      <AvatarImage src={viewingStory.profilePicture} />
+                      <AvatarFallback>{viewingStory.username[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-white font-semibold text-sm">{viewingStory.username}</span>
+                    <span className="text-white/80 text-xs">
+                      {formatTimestamp(viewingStory.stories[currentStoryIndex]?.timestamp)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setViewingStory(null)}
+                    className="text-white hover:text-gray-300"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                {/* Progress bars */}
+                <div className="flex gap-1 mt-2">
+                  {viewingStory.stories.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-0.5 flex-1 rounded ${
+                        idx === currentStoryIndex
+                          ? 'bg-white'
+                          : idx < currentStoryIndex
+                          ? 'bg-white/50'
+                          : 'bg-white/30'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation */}
+              {viewingStory.stories.length > 1 && (
+                <>
+                  {currentStoryIndex > 0 && (
+                    <button
+                      onClick={() => setCurrentStoryIndex(currentStoryIndex - 1)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300"
+                    >
+                      <ChevronLeft className="w-8 h-8" />
+                    </button>
+                  )}
+                  {currentStoryIndex < viewingStory.stories.length - 1 && (
+                    <button
+                      onClick={() => setCurrentStoryIndex(currentStoryIndex + 1)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300"
+                    >
+                      <ChevronRight className="w-8 h-8" />
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
