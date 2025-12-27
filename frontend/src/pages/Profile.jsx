@@ -123,6 +123,9 @@ const Profile = () => {
           <Button variant="ghost" className="w-full justify-start text-base" onClick={() => navigate('/')}>
             Voltar ao Feed
           </Button>
+          <Button variant="ghost" className="w-full justify-start text-base" onClick={() => navigate('/settings')}>
+            Configurações
+          </Button>
           <Button variant="ghost" className="w-full justify-start text-base text-red-600 hover:text-red-700" onClick={handleLogout}>
             Sair
           </Button>
