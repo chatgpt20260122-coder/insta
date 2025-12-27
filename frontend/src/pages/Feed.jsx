@@ -292,7 +292,7 @@ const Feed = () => {
                     <label className="cursor-pointer block">
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,video/*"
                         className="hidden"
                         onChange={(e) => setNewPostImage(e.target.files[0])}
                       />
