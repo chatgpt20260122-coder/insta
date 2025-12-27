@@ -51,6 +51,14 @@ function App() {
             path="/settings" 
             element={isAuthenticated ? <Settings /> : <Navigate to="/login" />} 
           />
+          <Route 
+            path="/followers" 
+            element={isAuthenticated ? <Followers /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/notifications" 
+            element={isAuthenticated ? <Notifications /> : <Navigate to="/login" />} 
+          />
         </Routes>
       </BrowserRouter>
       <Toaster />
