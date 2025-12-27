@@ -45,6 +45,10 @@ function App() {
             path="/search" 
             element={isAuthenticated ? <Search /> : <Navigate to="/login" />} 
           />
+          <Route 
+            path="/settings" 
+            element={isAuthenticated ? <Settings /> : <Navigate to="/login" />} 
+          />
         </Routes>
       </BrowserRouter>
       <Toaster />
