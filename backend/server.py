@@ -426,7 +426,6 @@ async def get_stories(current_user_id: str = Depends(get_current_user_id)):
             "userId": {"$in": following_list},
             "timestamp": {"$gte": twenty_four_hours_ago}
         }).sort("timestamp", -1).to_list(100)
-    }).sort("timestamp", -1).to_list(100)
     
     # Group stories by user
     stories_by_user = {}
