@@ -431,11 +431,19 @@ const Feed = () => {
                 <Card key={post.id} className="overflow-hidden border-0 shadow-sm">
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10 cursor-pointer">
+                      <Avatar 
+                        className="w-10 h-10 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => navigate(`/user/${post.userId}`)}
+                      >
                         <AvatarImage src={post.userProfilePicture} />
                         <AvatarFallback>{post.username[0]}</AvatarFallback>
                       </Avatar>
-                      <p className="font-semibold text-sm">{post.username}</p>
+                      <p 
+                        className="font-semibold text-sm cursor-pointer hover:text-gray-600 transition-colors"
+                        onClick={() => navigate(`/user/${post.userId}`)}
+                      >
+                        {post.username}
+                      </p>
                     </div>
                     {post.userId === currentUser.id ? (
                       <DropdownMenu>
