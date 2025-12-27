@@ -390,7 +390,14 @@ const Feed = () => {
                 </Dialog>
 
                 {stories.map((storyGroup) => (
-                  <div key={storyGroup.userId} className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0">
+                  <div 
+                    key={storyGroup.userId} 
+                    className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0"
+                    onClick={() => {
+                      setViewingStory(storyGroup);
+                      setCurrentStoryIndex(0);
+                    }}
+                  >
                     <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-600 via-pink-600 to-orange-600 p-0.5">
                       <div className="bg-white rounded-full p-0.5 w-full h-full">
                         <Avatar className="w-full h-full">
