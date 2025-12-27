@@ -1,50 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, MessageCircle, UserPlus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Card } from '../components/ui/card';
+import { notificationAPI } from '../api';
 
 const Notifications = () => {
   const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock notifications
-  const notifications = [
-    {
-      id: 1,
-      type: 'follow',
-      user: {
-        username: 'usuario1',
-        profilePicture: null
-      },
-      message: 'começou a seguir você',
-      timestamp: '2h',
-      read: false
-    },
-    {
-      id: 2,
-      type: 'like',
-      user: {
-        username: 'usuario2',
-        profilePicture: null
-      },
-      message: 'curtiu sua foto',
-      timestamp: '5h',
-      read: false,
-      postImage: 'https://via.placeholder.com/50'
-    },
-    {
-      id: 3,
-      type: 'comment',
-      user: {
-        username: 'usuario3',
-        profilePicture: null
-      },
-      message: 'comentou: "Que foto linda!"',
-      timestamp: '1d',
-      read: true,
-      postImage: 'https://via.placeholder.com/50'
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    try {
+      const response = await notificationAPI.getAll();
+      setNotifications(response.data.notifications);
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleNotificationClick = async (notification) => {
+    // Mark as read
+    if (!notification.read) {
+      try {
+        await notificationAPI.markAsRead(notification.id);
+        setNotifications(prevNotifs => 
+          prevNotifs.map(n => 
+            n.id === notification.id ? { ...n, read: true } : n
+          )
+        );
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
+
+    // Navigate based on type
+    if (notification.type === 'follow') {
+      navigate(`/user/${notification.actorId}`);
+    } else if (notification.postId) {
+      navigate('/');
+    }
+  };
 
   const getIcon = (type) => {
     switch (type) {
@@ -58,6 +60,28 @@ const Notifications = () => {
         return null;
     }
   };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+
+    if (diff < 60) return 'agora';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    return `${Math.floor(diff / 86400)}d`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando notificações...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
