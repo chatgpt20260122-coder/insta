@@ -99,14 +99,15 @@ const Notifications = () => {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 flex items-center gap-3 ${
+                  onClick={() => handleNotificationClick(notification)}
+                  className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-100 transition-colors ${
                     !notification.read ? 'bg-blue-50' : ''
                   }`}
                 >
                   <div className="relative">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={notification.user.profilePicture} />
-                      <AvatarFallback>{notification.user.username[0]}</AvatarFallback>
+                      <AvatarImage src={notification.actorProfilePicture} />
+                      <AvatarFallback>{notification.actorUsername[0]}</AvatarFallback>
                     </Avatar>
                     <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                       {getIcon(notification.type)}
@@ -115,10 +116,10 @@ const Notifications = () => {
 
                   <div className="flex-1">
                     <p className="text-sm">
-                      <span className="font-semibold">{notification.user.username}</span>{' '}
+                      <span className="font-semibold">{notification.actorUsername}</span>{' '}
                       {notification.message}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{notification.timestamp}</p>
+                    <p className="text-xs text-gray-500 mt-1">{formatTimestamp(notification.timestamp)}</p>
                   </div>
 
                   {notification.postImage && (
