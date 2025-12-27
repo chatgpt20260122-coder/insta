@@ -469,13 +469,24 @@ const Feed = () => {
                     )}
                   </div>
 
+                  {/* Post Image/Video */}
                   <div className="relative aspect-square bg-gray-100">
-                    <img
-                      src={post.imageUrl}
-                      alt="Post"
-                      className="w-full h-full object-cover"
-                      onDoubleClick={() => handleLike(post.id, post.liked)}
-                    />
+                    {post.imageUrl.includes('.mp4') || post.imageUrl.includes('.mov') || post.imageUrl.includes('video') ? (
+                      <video
+                        src={post.imageUrl}
+                        className="w-full h-full object-cover"
+                        controls
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={post.imageUrl}
+                        alt="Post"
+                        className="w-full h-full object-cover"
+                        onDoubleClick={() => handleLike(post.id, post.liked)}
+                      />
+                    )}
                   </div>
 
                   <div className="p-4">
