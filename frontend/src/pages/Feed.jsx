@@ -17,6 +17,7 @@ const Feed = () => {
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [newPostCaption, setNewPostCaption] = useState('');
   const [newPostImage, setNewPostImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
   const [storyImage, setStoryImage] = useState(null);
   const [uploadingStory, setUploadingStory] = useState(false);
