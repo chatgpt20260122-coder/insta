@@ -5,6 +5,7 @@ import { Input } from '../components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Label } from '../components/ui/label';
 import { toast } from '../hooks/use-toast';
+import { authAPI } from '../api';
 
 const Login = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,34 +15,60 @@ const Login = ({ onLogin }) => {
     username: '',
     fullName: ''
   });
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    // Mock login/register
-    if (isLogin) {
-      // Mock login check
-      if (formData.email && formData.password) {
+    try {
+      if (isLogin) {
+        // Login
+        const response = await authAPI.login({
+          email: formData.email,
+          password: formData.password
+        });
+        
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('isAuthenticated', 'true');
+        
         onLogin();
         toast({
           title: 'Login realizado com sucesso!',
-          description: `Bem-vindo de volta!`
+          description: `Bem-vindo de volta, ${response.data.user.username}!`
         });
         navigate('/');
-      }
-    } else {
-      // Mock register
-      if (formData.email && formData.password && formData.username && formData.fullName) {
+      } else {
+        // Register
+        const response = await authAPI.register({
+          email: formData.email,
+          password: formData.password,
+          username: formData.username,
+          fullName: formData.fullName
+        });
+        
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         localStorage.setItem('isAuthenticated', 'true');
+        
         onLogin();
         toast({
           title: 'Conta criada com sucesso!',
-          description: `Bem-vindo, ${formData.fullName}!`
+          description: `Bem-vindo, ${response.data.user.fullName}!`
         });
         navigate('/');
       }
+    } catch (error) {
+      const message = error.response?.data?.detail || 'Erro ao processar requisição';
+      toast({
+        title: 'Erro',
+        description: message,
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,6 +110,7 @@ const Login = ({ onLogin }) => {
                       value={formData.fullName}
                       onChange={handleChange}
                       required={!isLogin}
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -95,6 +123,7 @@ const Login = ({ onLogin }) => {
                       value={formData.username}
                       onChange={handleChange}
                       required={!isLogin}
+                      disabled={loading}
                     />
                   </div>
                 </>
@@ -110,6 +139,7 @@ const Login = ({ onLogin }) => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
               </div>
               
@@ -123,11 +153,16 @@ const Login = ({ onLogin }) => {
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  disabled={loading}
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                {isLogin ? 'Entrar' : 'Criar conta'}
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                disabled={loading}
+              >
+                {loading ? 'Carregando...' : (isLogin ? 'Entrar' : 'Criar conta')}
               </Button>
             </form>
 
@@ -136,6 +171,7 @@ const Login = ({ onLogin }) => {
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-sm text-purple-600 hover:text-purple-700 transition-colors"
+                disabled={loading}
               >
                 {isLogin ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Entre'}
               </button>
