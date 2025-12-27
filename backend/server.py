@@ -479,6 +479,226 @@ async def create_story(
         "timestamp": datetime.utcnow()
     }
 
+# ==================== MESSAGES ROUTES ====================
+
+messages_collection = db.messages
+
+@api_router.get("/messages/conversations")
+async def get_conversations(current_user_id: str = Depends(get_current_user_id)):
+    """Get list of conversations"""
+    # Get unique conversations
+    messages = await messages_collection.find({
+        "$or": [
+            {"senderId": current_user_id},
+            {"receiverId": current_user_id}
+        ]
+    }).sort("timestamp", -1).to_list(1000)
+    
+    # Group by conversation
+    conversations = {}
+    for msg in messages:
+        other_user_id = msg["receiverId"] if msg["senderId"] == current_user_id else msg["senderId"]
+        
+        if other_user_id not in conversations:
+            # Get other user info
+            other_user = await users_collection.find_one({"_id": ObjectId(other_user_id)})
+            if other_user:
+                conversations[other_user_id] = {
+                    "userId": other_user_id,
+                    "username": other_user["username"],
+                    "profilePicture": other_user.get("profilePicture"),
+                    "lastMessage": msg["text"],
+                    "timestamp": msg["timestamp"],
+                    "unread": not msg.get("read", False) and msg["receiverId"] == current_user_id
+                }
+    
+    return {"conversations": list(conversations.values())}
+
+@api_router.get("/messages/{user_id}")
+async def get_messages(user_id: str, current_user_id: str = Depends(get_current_user_id)):
+    """Get messages with a specific user"""
+    messages = await messages_collection.find({
+        "$or": [
+            {"senderId": current_user_id, "receiverId": user_id},
+            {"senderId": user_id, "receiverId": current_user_id}
+        ]
+    }).sort("timestamp", 1).to_list(1000)
+    
+    # Mark as read
+    await messages_collection.update_many(
+        {"senderId": user_id, "receiverId": current_user_id, "read": False},
+        {"$set": {"read": True}}
+    )
+    
+    result = []
+    for msg in messages:
+        result.append({
+            "id": str(msg["_id"]),
+            "senderId": msg["senderId"],
+            "receiverId": msg["receiverId"],
+            "text": msg["text"],
+            "timestamp": msg["timestamp"],
+            "read": msg.get("read", False)
+        })
+    
+    return {"messages": result}
+
+@api_router.post("/messages/{user_id}")
+async def send_message(
+    user_id: str,
+    message: dict,
+    current_user_id: str = Depends(get_current_user_id)
+):
+    """Send a message to a user"""
+    message_dict = {
+        "senderId": current_user_id,
+        "receiverId": user_id,
+        "text": message.get("text", ""),
+        "timestamp": datetime.utcnow(),
+        "read": False
+    }
+    
+    result = await messages_collection.insert_one(message_dict)
+    
+    return {
+        "id": str(result.inserted_id),
+        "senderId": current_user_id,
+        "receiverId": user_id,
+        "text": message.get("text", ""),
+        "timestamp": datetime.utcnow(),
+        "read": False
+    }
+
+# ==================== STORY VIEWS ROUTES ====================
+
+story_views_collection = db.story_views
+
+@api_router.post("/stories/{story_id}/view")
+async def view_story(story_id: str, current_user_id: str = Depends(get_current_user_id)):
+    """Record a story view"""
+    # Check if already viewed
+    existing_view = await story_views_collection.find_one({
+        "storyId": story_id,
+        "userId": current_user_id
+    })
+    
+    if not existing_view:
+        await story_views_collection.insert_one({
+            "storyId": story_id,
+            "userId": current_user_id,
+            "timestamp": datetime.utcnow()
+        })
+    
+    return {"message": "View recorded"}
+
+@api_router.get("/stories/{story_id}/views")
+async def get_story_views(story_id: str, current_user_id: str = Depends(get_current_user_id)):
+    """Get who viewed a story"""
+    # Check if story belongs to current user
+    story = await stories_collection.find_one({"_id": ObjectId(story_id)})
+    if not story or story["userId"] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    views = await story_views_collection.find({"storyId": story_id}).to_list(1000)
+    
+    result = []
+    for view in views:
+        user = await users_collection.find_one({"_id": ObjectId(view["userId"])})
+        if user:
+            result.append({
+                "userId": view["userId"],
+                "username": user["username"],
+                "profilePicture": user.get("profilePicture"),
+                "timestamp": view["timestamp"]
+            })
+    
+    return {"views": result, "count": len(result)}
+
+# ==================== POST SHARING ROUTES ====================
+
+@api_router.post("/posts/{post_id}/share")
+async def share_post(
+    post_id: str,
+    share_data: dict,
+    current_user_id: str = Depends(get_current_user_id)
+):
+    """Share a post via DM"""
+    user_ids = share_data.get("userIds", [])
+    
+    # Get post info
+    post = await posts_collection.find_one({"_id": ObjectId(post_id)})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Send message to each user
+    for user_id in user_ids:
+        message_dict = {
+            "senderId": current_user_id,
+            "receiverId": user_id,
+            "text": f"Compartilhou um post",
+            "postId": post_id,
+            "timestamp": datetime.utcnow(),
+            "read": False
+        }
+        await messages_collection.insert_one(message_dict)
+    
+    return {"message": f"Shared with {len(user_ids)} users"}
+
+# ==================== NOTIFICATIONS ROUTES ====================
+
+notifications_collection = db.notifications
+
+@api_router.get("/notifications")
+async def get_notifications(current_user_id: str = Depends(get_current_user_id)):
+    """Get user notifications"""
+    notifications = await notifications_collection.find({
+        "userId": current_user_id
+    }).sort("timestamp", -1).limit(50).to_list(50)
+    
+    result = []
+    for notif in notifications:
+        # Get actor user info
+        actor = await users_collection.find_one({"_id": ObjectId(notif["actorId"])})
+        if actor:
+            result.append({
+                "id": str(notif["_id"]),
+                "type": notif["type"],
+                "actorId": notif["actorId"],
+                "actorUsername": actor["username"],
+                "actorProfilePicture": actor.get("profilePicture"),
+                "message": notif.get("message", ""),
+                "postId": notif.get("postId"),
+                "postImage": notif.get("postImage"),
+                "timestamp": notif["timestamp"],
+                "read": notif.get("read", False)
+            })
+    
+    return {"notifications": result}
+
+@api_router.post("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, current_user_id: str = Depends(get_current_user_id)):
+    """Mark notification as read"""
+    await notifications_collection.update_one(
+        {"_id": ObjectId(notification_id), "userId": current_user_id},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Notification marked as read"}
+
+# Helper function to create notification
+async def create_notification(user_id: str, actor_id: str, notif_type: str, message: str, post_id: str = None, post_image: str = None):
+    """Create a notification"""
+    if user_id != actor_id:  # Don't notify yourself
+        await notifications_collection.insert_one({
+            "userId": user_id,
+            "actorId": actor_id,
+            "type": notif_type,
+            "message": message,
+            "postId": post_id,
+            "postImage": post_image,
+            "timestamp": datetime.utcnow(),
+            "read": False
+        })
+
 # Include the router in the main app
 app.include_router(api_router)
 
