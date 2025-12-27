@@ -6,6 +6,7 @@ import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import UserProfile from "./pages/UserProfile";
+import Settings from "./pages/Settings";
 import { Toaster } from "./components/ui/toaster";
 
 function App() {
